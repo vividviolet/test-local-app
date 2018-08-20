@@ -1,0 +1,27 @@
+{
+  "extends": ["tslint-config-shopify"],
+  "rules": {
+    "arrow-parens": [true, "ban-single-arg-parens"],
+    "member-ordering": [
+      true,
+      {
+        "order": "statics-first"
+      }
+    ],
+    "newline-before-return": true,
+    "no-bitwise": false,
+    "no-irregular-whitespace": true,
+    "no-require-imports": false,
+    "no-trailing-whitespace": true,
+    "no-var-requires": false,
+    "object-literal-sort-keys": [true, "ignore-case", "shorthand-first"],
+    "ordered-imports": [
+      true,
+      {
+        "import-sources-order": "lowercase-first",
+        "named-imports-order": "lowercase-first"
+      }
+    ],
+    "trailing-comma-interface": false
+  }
+}
