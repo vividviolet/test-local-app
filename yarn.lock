@@ -2,9 +2,9 @@
 # yarn lockfile v1
 
 
-"@shopify/easdk@^0.0.15":
-  version "0.0.15"
-  resolved "https://packages.shopify.io/shopify/node/npm/@shopify/easdk/-/easdk-0.0.15.tgz#04a8977b3714894f96ff3c8d4294353383669e8b"
+"@shopify/easdk@^0.0.16":
+  version "0.0.16"
+  resolved "https://packages.shopify.io/shopify/node/npm/@shopify/easdk/-/easdk-0.0.16.tgz#20408bb84ac97d033ad3aadab9b5cfa9cc9a74da"
 
 "@shopify/shopify-express@^1.0.0-alpha.7":
   version "1.0.0-alpha.7"

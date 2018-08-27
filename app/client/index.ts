@@ -1,4 +1,4 @@
-import createAppWrapper from '@shopify/easdk';
+import createAppWrapper, { getShopOrigin } from '@shopify/easdk';
 import {
   ButtonGroup,
   Button,
@@ -53,7 +53,8 @@ function openModal(size?: Modal.Size) {
 
 const createApp = createAppWrapper(window.top);
 const app = createApp({
-  apiClientId: '12345',
+  apiKey: 'easdk_key',
+  shopOrigin: getShopOrigin(),
 });
 
 const groupedButton1 = Button.create(app, { label: 'Show flash message' });

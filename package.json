@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "@shopify/easdk": "^0.0.15",
+    "@shopify/easdk": "^0.0.16",
     "@types/react": "^16.4.11",
     "@types/react-dom": "^16.0.7",
     "react": "^16.4.2",
