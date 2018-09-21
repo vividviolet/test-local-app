@@ -1,18 +1,17 @@
 # https://development.shopify.io/tools/dev/railgun/Railgun-Config
-name: easdk
+name: app-bridge
 
 vm:
-  image:      /opt/dev/misc/railgun-images/default
+  image: /opt/dev/misc/railgun-images/default
   ip_address: 192.168.64.214
-  memory:     2G
-  cores:      2
+  memory: 2G
+  cores: 2
 
 volumes:
-  root:  '2G'
+  root: '2G'
 
 services:
   - nginx
 
 hostnames:
-  - easdk.myshopify.io: { proxy_to_host_port: 39358 }
-
+  - app-bridge.myshopify.io: { proxy_to_host_port: 39358 }

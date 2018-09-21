@@ -1,4 +1,4 @@
-name: easdk
+name: app-bridge
 
 type: node
 
@@ -15,4 +15,4 @@ commands:
   server: yarn start
 
 open:
-  app: https://easdk.myshopify.io
+  app: https://app-bridge.myshopify.io

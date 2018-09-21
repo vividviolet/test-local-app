@@ -1,11 +1,11 @@
-import createAppWrapper, { getShopOrigin } from '@shopify/easdk';
+import createApp, { getShopOrigin } from '@shopify/app-bridge';
 import {
   ButtonGroup,
   Button,
   Flash,
   Modal,
   TitleBar,
-} from '@shopify/easdk/actions';
+} from '@shopify/app-bridge/actions';
 
 function openModal(size?: Modal.Size) {
   // Create buttons
@@ -51,9 +51,8 @@ function openModal(size?: Modal.Size) {
   modal.dispatch(Modal.Action.OPEN);
 }
 
-const createApp = createAppWrapper(window.top);
 const app = createApp({
-  apiKey: 'easdk_key',
+  apiKey: 'app_bridge_key',
   shopOrigin: getShopOrigin(),
 });
 

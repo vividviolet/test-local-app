@@ -62,9 +62,9 @@ function getPart(part) {
 }
 
 const { routes } = shopifyExpress({
-  host: 'https://easdk.myshopify.io',
-  apiKey: 'easdk_key',
-  secret: 'easdk_secret',
+  host: 'https://app-bridge.myshopify.io',
+  apiKey: 'app_bridge_key',
+  secret: 'app_bridge_secret',
   scope: ['read_products'],
   afterAuth(request, response) {
     console.log('hi');
