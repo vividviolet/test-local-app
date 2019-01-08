@@ -12,22 +12,31 @@ const config = {
   devtool: 'source-map',
   plugins: [],
   resolve: {
-    extensions: ['.ts', '.js'],
+    extensions: ['.tsx', '.js'],
     modules: ['node_modules'],
   },
   module: {
     rules: [
+      {
+        test: /\.css$/,
+        include: join(__dirname, 'node_modules'),
+        use: ['style-loader', 'css-loader'],
+      },
       {
         test: /\.tsx?$/,
         use: {
           loader: 'awesome-typescript-loader',
           options: {
             declaration: false,
+            reportFiles: ['src/**/*.{ts,tsx}'],
           },
         },
         exclude: /node_modules/,
       },
     ],
+  },
+  externals: {
+    polaris: '@shopify/polaris',
   },
 };
 
@@ -67,7 +76,6 @@ const { routes } = shopifyExpress({
   secret: 'app_bridge_secret',
   scope: ['read_products'],
   afterAuth(request, response) {
-    console.log('hi');
     const {
       session: { accessToken, shop },
     } = request;
