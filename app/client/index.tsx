@@ -54,8 +54,8 @@ export class App extends React.PureComponent<any, State> {
     this.setState({ loading: !this.state.loading });
   }
 
-  toastMessage() {
-    this.setState({ toastContent: 'Saved' });
+  toastMessage(toastContent: string) {
+    this.setState({ toastContent: toastContent });
   }
 
   openProductPicker() {
@@ -120,8 +120,8 @@ export class App extends React.PureComponent<any, State> {
       />
     ) : null;
 
-    const products = this.state.selectedProducts
-      ? this.state.selectedProducts.map(product => ({
+    const products = selectedProducts
+      ? selectedProducts.map(product => ({
           term: (product as any).title || '',
           description: JSON.stringify(product),
         }))
@@ -141,10 +141,15 @@ export class App extends React.PureComponent<any, State> {
           content: 'Save',
           disabled: !saveEnabled,
           onAction: () => {
-            this.setState({ saveEnabled: false }, this.toastMessage);
+            this.setState({ saveEnabled: false });
+            this.toastMessage('Saved!');
           },
         }}
         secondaryActions={[
+          {
+            content: 'Show toast',
+            onAction: () => this.toastMessage('Hi there!'),
+          },
           { content: 'Toggle loading', onAction: () => this.toggleLoading() },
           {
             content: 'Product picker',
