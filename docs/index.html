@@ -15,7 +15,7 @@
   For a full example see the example rails app:
   https://github.com/Shopify/embedded-app-example/
   -->
-    <script src="https://app.myshopify.io/assets/external/app.js"></script>
+    <script src="https://cdn.shopify.com/s/assets/external/app.js"></script>
     <script>
       const shopOrigin = 'prettypetite.myshopify.com';
       const apiKey = '82f6504b453fe36e877952027050894f';
@@ -27,7 +27,7 @@
 
       // If the current window is the 'parent', change the URL by setting location.href
       if (window.top == window.self) {
-        window.location.assign(`https://${shopOrigin}/admin/${permissionUrl}`);
+        window.location.assign(`https://${shopOrigin}/admin${permissionUrl}`);
 
         // If the current window is the 'child', change the parent's URL with ShopifyApp.redirect
       } else {
