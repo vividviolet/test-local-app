@@ -1,972 +1,658 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Embedded app example</title>
 
-    <style type="text/css">
-      body {
-        font: 1em/1.3em 'Lucida Grande', Arial, Arial, sans-serif;
-      }
-    </style>
-
-    <!--
-  This is a trivial example with some messy code to make it simple and shippable with Shopify.
-  For a full example see the example rails app:
-  https://github.com/Shopify/embedded-app-example/
-  -->
-    <script src="https://cdn.shopify.com/s/assets/external/app.js"></script>
-    <script>
-      const shopOrigin = 'prettypetite.myshopify.com';
-      const apiKey = '82f6504b453fe36e877952027050894f';
-      const redirectUri = 'https://vividviolet.github.io/test-local-app';
-      const permissionUrl = `/oauth/authorize?client_id=${apiKey}&scope=read_products&redirect_uri=${redirectUri}`;
-
-      ShopifyApp.init({ apiKey: apiKey, shopOrigin: `https://${shopOrigin}` });
-
-      // If the current window is the 'parent', change the URL by setting location.href
-      if (window.top == window.self) {
-        debugger;
-        window.location.assign(`https://${shopOrigin}/admin${permissionUrl}`);
-
-        // If the current window is the 'child', change the parent's URL with ShopifyApp.redirect
-      } else {
-        debugger;
-        ShopifyApp.redirect(permissionUrl);
-      }
-    </script>
-    <script>
-      window.EmbeddedAppExample = {
-        allButtons: {
-          buttons: {
-            primary: {
-              label: 'Sweet arse button',
-            },
-            secondary: [
+<head>
+  <meta charset="utf-8" />
+</head>
+<script src="https://cdn.shopify.com/s/assets/external/app.js"></script>
+<script>
+  window.EmbeddedAppExample = {
+    allButtons: {
+      buttons: {
+        primary: {
+          label: "Sweet arse button",
+        },
+        secondary: [
+          {
+            label: "Dropdown",
+            type: "dropdown",
+            links: [
               {
-                label: 'Dropdown',
-                type: 'dropdown',
-                links: [
-                  {
-                    label: 'Alert modal',
-                    loading: false,
-                    callback: function() {
-                      EmbeddedAppExample.alert();
-                    },
-                  },
-                  {
-                    label: 'Google',
-                    href: 'http://google.ca',
-                    target: 'parent',
-                    loading: true,
-                  },
-                ],
+                label: "Alert modal",
+                loading: false,
+                callback: function () { EmbeddedAppExample.alert(); }
               },
               {
-                label: 'Documentation',
-                href: 'https://help.shopify.com/embedded-app-sdk',
-                target: 'new',
-              },
-              {
-                label: 'Back',
-                href: '/apps',
-                target: 'shopify',
-              },
-            ],
-          },
-        },
-        onlyPrimaryButton: {
-          buttons: {
-            primary: {
-              label: 'Sweet arse button',
-            },
-          },
-        },
-        apiKey: undefined,
-        origin: undefined,
-        shop: undefined,
-        title: undefined,
-        buttonsDisabled: false,
-        breadcrumb: undefined,
-        modalUrl: function() {
-          return (
-            'https://app.myshopify.io/embedded-app-modal-example.html?api_key=' +
-            EmbeddedAppExample.apiKey +
-            '&shop=' +
-            EmbeddedAppExample.shop
-          );
-        },
-        init: function() {
-          ShopifyApp.init({
-            apiKey: EmbeddedAppExample.apiKey,
-            shopOrigin: EmbeddedAppExample.origin,
-            debug: true,
-            forceRedirect: false,
-          });
-
-          ShopifyApp.ready(function() {
-            ShopifyApp.Bar.initialize(EmbeddedAppExample.allButtons);
-
-            document.getElementById('current-user').innerHTML = JSON.stringify(
-              ShopifyApp.User.current
-            );
-          });
-        },
-        toggleTitle: function() {
-          EmbeddedAppExample.title = EmbeddedAppExample.title
-            ? undefined
-            : 'The page title';
-          ShopifyApp.Bar.setBreadcrumb(undefined);
-          ShopifyApp.Bar.setTitle(EmbeddedAppExample.title);
-        },
-        toggleBreadcrumb: function() {
-          if (EmbeddedAppExample.breadcrumb) {
-            EmbeddedAppExample.breadcrumb = undefined;
-            EmbeddedAppExample.title = undefined;
-          } else {
-            EmbeddedAppExample.breadcrumb = {
-              label: 'Sub-page',
-              href: '#',
-              target: 'app',
-              loading: false,
-            };
-            EmbeddedAppExample.title = 'The page title';
-          }
-          ShopifyApp.Bar.setBreadcrumb(EmbeddedAppExample.breadcrumb);
-          ShopifyApp.Bar.setTitle(EmbeddedAppExample.title);
-        },
-        toggleDisableButtons: function() {
-          if (EmbeddedAppExample.buttonsDisabled) {
-            ShopifyApp.Bar.enableAllButtons();
-            EmbeddedAppExample.buttonsDisabled = false;
-          } else {
-            ShopifyApp.Bar.disableAllButtons();
-            EmbeddedAppExample.buttonsDisabled = true;
-          }
-        },
-        showPrimaryButtonsOnly: function() {
-          ShopifyApp.Bar.initialize(EmbeddedAppExample.onlyPrimaryButton);
-        },
-        showAllButtons: function() {
-          ShopifyApp.Bar.initialize(EmbeddedAppExample.allButtons);
-        },
-        addPagination: function() {
-          ShopifyApp.Bar.setPagination({
-            previous: {
-              loading: false,
-              callback: function() {
-                alert('Previous clicked');
-              },
-            },
-            next: {
-              loading: false,
-              callback: function() {
-                alert('Next clicked');
-              },
-            },
-          });
-        },
-        singleProductPicker: function(options) {
-          ShopifyApp.Modal.productPicker(options, function(result, data) {
-            if (data.products && data.products.length > 0) {
-              message = data.products[0].title + ' was selected by the user.';
-            } else if (result) {
-              message =
-                "'Select Product' was clicked but nothing was selected.";
-            } else if (data.errors) {
-              message = data.errors;
-            } else {
-              message = 'Product selection cancelled!';
-            }
-            ShopifyApp.flashNotice(message);
-          });
-        },
-        multipleProductsPicker: function(options) {
-          options = options || {};
-          options.selectMultiple = true;
-          ShopifyApp.Modal.productPicker(options, function(result, data) {
-            if (data.products && data.products.length > 0) {
-              productTitles = data.products.map(function(product) {
-                return product.title;
-              });
-              message = productTitles.join(', ') + ' selected.';
-            } else if (result) {
-              message =
-                "'Select Product' was clicked but nothing was selected.";
-            } else if (data.errors) {
-              message = data.errors;
-            } else {
-              message = 'Product selection cancelled!';
-            }
-            ShopifyApp.flashNotice(message);
-          });
-        },
-        singleCollectionPicker: function(options) {
-          ShopifyApp.Modal.collectionPicker(options, function(result, data) {
-            if (data.collections && data.collections.length > 0) {
-              message =
-                data.collections[0].handle + ' was selected by the user.';
-            } else if (result) {
-              message =
-                "'Select Collection' was clicked but nothing was selected.";
-            } else if (data.errors) {
-              message = data.errors;
-            } else {
-              message = 'Collection selection cancelled!';
-            }
-            ShopifyApp.flashNotice(message);
-          });
-        },
-
-        multipleCollectionPicker: function(options) {
-          options = options || {};
-          options.selectMultiple = true;
-          ShopifyApp.Modal.collectionPicker(options, function(result, data) {
-            if (data.collections && data.collections.length > 0) {
-              collectionTitles = data.collections.map(function(collection) {
-                return collection.title;
-              });
-
-              message = collectionTitles.join(', ') + ' selected.';
-            } else if (result) {
-              message =
-                "'Select Collection' was clicked but nothing was selected.";
-            } else if (data.errors) {
-              message = data.errors;
-            } else {
-              message = 'Collection selection cancelled!';
-            }
-
-            ShopifyApp.flashNotice(message);
-          });
-        },
-
-        alert: function() {
-          ShopifyApp.Modal.alert('This window is in Shopify');
-        },
-        confirm: function() {
-          ShopifyApp.Modal.confirm(
-            {
-              title: 'Are you sure?',
-              message:
-                'You need to accept the terms of service before continuing. Do you accept?',
-              okButton: 'Yes, I accept',
-              cancelButton: 'No, I decline',
-              style: 'danger',
-            },
-            function(result) {
-              if (result) ShopifyApp.flashNotice("Clicked 'yes'");
-              else ShopifyApp.flashNotice("Clicked 'no'");
-            }
-          );
-        },
-        input: function(value) {
-          ShopifyApp.Modal.input(
-            { message: 'Enter some text:', value: value },
-            function(result, data) {
-              if (result) {
-                ShopifyApp.flashNotice('Received: "' + data + '"');
-              } else {
-                ShopifyApp.flashError('Input cancelled.');
+                label: "Google",
+                href: "http://google.ca",
+                target: "parent",
+                loading: true
               }
-            }
-          );
-        },
-        modal: function() {
-          ShopifyApp.Modal.open(
-            {
-              src: EmbeddedAppExample.modalUrl(),
-              title: 'Embedded app example modal with lots of buttons',
-              height: 300,
-              style: 'disabled',
-              buttons: {
-                primary: {
-                  label: 'OK',
-                  loading: true,
-                  callback: function() {
-                    ShopifyApp.Modal.close(true, 'OK');
-                    ShopifyApp.Bar.loadingOff();
-                  },
-                },
-                secondary: [
-                  {
-                    label: 'Destroy',
-                    style: 'danger',
-                    callback: function(label) {
-                      ShopifyApp.Modal.close(
-                        false,
-                        'App callback fired with - Clicked Destroy'
-                      );
-                    },
-                  },
-                ],
-                tertiary: [
-                  {
-                    label: 'Dropdown (Not Implemented)',
-                    type: 'dropdown',
-                    links: [
-                      {
-                        label: 'Alert modal',
-                        loading: false,
-                        callback: function() {
-                          EmbeddedAppExample.alert();
-                        },
-                      },
-                      {
-                        label: 'Google',
-                        href: 'http://google.ca',
-                        target: 'parent',
-                        loading: true,
-                      },
-                    ],
-                  },
-                  {
-                    label: 'new',
-                    href: 'https://help.shopify.com/embedded-app-sdk',
-                    target: 'new',
-                  },
-                  {
-                    label: 'shopify',
-                    href: '/apps',
-                    target: 'shopify',
-                  },
-                  {
-                    label: 'parent',
-                    href: 'https://help.shopify.com/embedded-app-sdk',
-                    target: 'parent',
-                  },
-                  {
-                    label: 'app',
-                    href: EmbeddedAppExample.modalUrl(),
-                    target: 'app',
-                  },
-                ],
-              },
-            },
-            function(result, data) {
-              if (result) {
-                ShopifyApp.flashNotice(
-                  'Modal closed with: ' + result + ' / ' + data
-                );
-              } else {
-                ShopifyApp.flashError(
-                  'Modal cancelled with: ' + result + ' / ' + data
-                );
-              }
-            }
-          );
-        },
-        buttonlessModal: function() {
-          ShopifyApp.Modal.open(
-            {
-              src: EmbeddedAppExample.modalUrl(),
-              title: 'Embedded app example modal',
-              height: 500,
-            },
-            function(result, data) {
-              ShopifyApp.flashNotice(
-                'Modal closed with: ' + result + ' / ' + data
-              );
-            }
-          );
-        },
-        togglePrimaryButton: function() {
-          ShopifyApp.Modal.open(
-            {
-              src: EmbeddedAppExample.modalUrl(),
-              title: 'Embedded app example modal',
-              height: 500,
-              buttons: {
-                primary: {
-                  label: 'Send',
-                  loading: true,
-                  callback: function() {
-                    ShopifyApp.Modal.close(true, 'Send');
-                    ShopifyApp.Bar.loadingOff();
-                  },
-                },
-                secondary: {
-                  label: 'Cancel',
-                  callback: function() {
-                    ShopifyApp.Modal.close(true, 'Cancel');
-                  },
-                },
-              },
-            },
-            function(result, data) {
-              ShopifyApp.flashNotice(
-                'Modal closed with: ' + result + ' / ' + data
-              );
-            }
-          );
-        },
-        defaultSizeModal: function() {
-          ShopifyApp.Modal.open(
-            {
-              src: EmbeddedAppExample.modalUrl(),
-              title: 'Embedded app example modal',
-              buttons: {
-                primary: {
-                  label: 'OK',
-                  loading: true,
-                  callback: function() {
-                    ShopifyApp.Modal.close(true, 'OK');
-                    ShopifyApp.Bar.loadingOff();
-                  },
-                },
-              },
-            },
-            function(result, data) {
-              ShopifyApp.flashNotice(
-                'Modal closed with: ' + result + ' / ' + data
-              );
-            }
-          );
-        },
-        fullsizeModal: function() {
-          ShopifyApp.Modal.open(
-            {
-              src: EmbeddedAppExample.modalUrl(),
-              title: 'Embedded app example modal',
-              height: 700,
-              width: 'fullwidth',
-              buttons: {
-                primary: {
-                  label: 'OK',
-                  loading: true,
-                  callback: function() {
-                    ShopifyApp.Modal.close(true, 'OK');
-                    ShopifyApp.Bar.loadingOff();
-                  },
-                },
-              },
-            },
-            function(result, data) {
-              ShopifyApp.flashNotice(
-                'Modal closed with: ' + result + ' / ' + data
-              );
-            }
-          );
-        },
-        minSizeModal: function() {
-          ShopifyApp.Modal.open(
-            {
-              src: EmbeddedAppExample.modalUrl(),
-              title: 'Embedded app example modal',
-              height: 1,
-              width: 1,
-              buttons: {
-                primary: {
-                  label: 'OK',
-                  loading: true,
-                  callback: function() {
-                    ShopifyApp.Modal.close(true, 'OK');
-                    ShopifyApp.Bar.loadingOff();
-                  },
-                },
-              },
-            },
-            function(result, data) {
-              ShopifyApp.flashNotice(
-                'Modal closed with: ' + result + ' / ' + data
-              );
-            }
-          );
-        },
-        disableAnimationModal: function() {
-          ShopifyApp.Modal.open(
-            {
-              disableAnimation: true,
-              src: EmbeddedAppExample.modalUrl(),
-              title: 'Embedded app example modal with no animations',
-              height: 500,
-              buttons: {
-                primary: {
-                  label: 'OK',
-                  loading: true,
-                  callback: function() {
-                    ShopifyApp.Modal.close(true, 'OK');
-                    ShopifyApp.Bar.loadingOff();
-                  },
-                },
-              },
-            },
-            function(result, data) {
-              ShopifyApp.flashNotice(
-                'Modal closed with: ' + result + ' / ' + data
-              );
-            }
-          );
-        },
-        hideHeaderModal: function() {
-          ShopifyApp.Modal.open(
-            {
-              hideHeader: true,
-              src: EmbeddedAppExample.modalUrl(),
-              height: 500,
-              buttons: {
-                primary: {
-                  label: 'OK',
-                  loading: true,
-                  callback: function() {
-                    ShopifyApp.Modal.close(true, 'OK');
-                    ShopifyApp.Bar.loadingOff();
-                  },
-                },
-              },
-            },
-            function(result, data) {
-              ShopifyApp.flashNotice(
-                'Modal closed with: ' + result + ' / ' + data
-              );
-            }
-          );
-        },
-        hideFooterModal: function() {
-          ShopifyApp.Modal.open(
-            {
-              hideFooter: true,
-              src: EmbeddedAppExample.modalUrl(),
-              title: 'Embedded app example modal without footer',
-              height: 500,
-              buttons: {
-                primary: {
-                  label: 'OK',
-                  loading: true,
-                  callback: function() {
-                    ShopifyApp.Modal.close(true, 'OK');
-                    ShopifyApp.Bar.loadingOff();
-                  },
-                },
-              },
-            },
-            function(result, data) {
-              ShopifyApp.flashNotice(
-                'Modal closed with: ' + result + ' / ' + data
-              );
-            }
-          );
-        },
-        fullscreenModal: function() {
-          ShopifyApp.Modal.open(
-            {
-              src: EmbeddedAppExample.modalUrl(),
-              title: 'Embedded app example modal',
-              fullScreen: true,
-              buttons: {
-                primary: {
-                  label: 'OK',
-                  loading: true,
-                  callback: function() {
-                    ShopifyApp.Modal.close(true, 'OK');
-                    ShopifyApp.Bar.loadingOff();
-                  },
-                },
-              },
-            },
-            function(result, data) {
-              ShopifyApp.flashNotice(
-                'Modal closed with: ' + result + ' / ' + data
-              );
-            }
-          );
-        },
-        loadingOn: function() {
-          ShopifyApp.Bar.loadingOn();
-        },
-        loadingOff: function() {
-          ShopifyApp.Bar.loadingOff();
-        },
-        flashNotice: function(message) {
-          ShopifyApp.flashNotice(
-            message || 'App callback fired with - Operation was successful'
-          );
-        },
-        flashError: function(message) {
-          ShopifyApp.flashError(
-            message || 'App callback fired with - There was an error'
-          );
-        },
-        pushState: function() {
-          ShopifyApp.pushState('/url/push_state');
-        },
-        replaceState: function() {
-          ShopifyApp.replaceState('/url/replace_state');
-        },
-        remoteRedirect: function() {
-          ShopifyApp.remoteRedirect(
-            'https://help.shopify.com/api/sdks/embedded-app-sdk'
-          );
-        },
-        print: function() {
-          ShopifyApp.print();
-        },
-        changeSidebarSubsection: function(section) {
-          ShopifyApp.Sidebar.setSection(section);
-        },
-      };
-
-      var paramPairs = decodeURIComponent(
-        window.location.search.slice(1)
-      ).split('&');
-      for (var i = 0; i < paramPairs.length; i++) {
-        var param = paramPairs[i].split('=');
-        if (param[0] == 'api_key') EmbeddedAppExample.apiKey = param[1];
-        if (param[0] == 'shop') {
-          EmbeddedAppExample.shop = param[1];
-          EmbeddedAppExample.origin = 'https://' + param[1];
+            ]
+          },
+          {
+            label: "Documentation",
+            href: "http://docs.shopify.com/embedded-app-sdk",
+            target: 'new'
+          },
+          {
+            label: "Back",
+            href: "/apps",
+            target: 'shopify'
+          }
+        ]
+      }
+    },
+    onlyPrimaryButton: {
+      buttons: {
+        primary: {
+          label: "Sweet arse button",
         }
       }
-    </script>
-  </head>
+    },
+    apiKey: undefined,
+    origin: undefined,
+    shop: undefined,
+    title: undefined,
+    buttonsDisabled: false,
+    breadcrumb: undefined,
+    modalUrl: function () {
+      return 'https://vividviolet.github.io/test-local-app?api_key=' + EmbeddedAppExample.apiKey + '&shop=' + EmbeddedAppExample.shop;
+    },
+    init: function () {
+      ShopifyApp.init({
+        apiKey: EmbeddedAppExample.apiKey,
+        shopOrigin: EmbeddedAppExample.origin,
+        debug: true,
+        forceRedirect: false
+      });
+      ShopifyApp.ready(function () {
+        ShopifyApp.Bar.initialize(EmbeddedAppExample.allButtons);
+        document.getElementById('current-user').innerHTML = JSON.stringify(ShopifyApp.User.current);
+      });
+    },
+    toggleTitle: function () {
+      EmbeddedAppExample.title = (EmbeddedAppExample.title ? undefined : "The page title")
+      ShopifyApp.Bar.setBreadcrumb(undefined);
+      ShopifyApp.Bar.setTitle(EmbeddedAppExample.title);
+    },
+    toggleBreadcrumb: function () {
+      if (EmbeddedAppExample.breadcrumb) {
+        EmbeddedAppExample.breadcrumb = undefined;
+        EmbeddedAppExample.title = undefined;
+      }
+      else {
+        EmbeddedAppExample.breadcrumb = {
+          label: "Sub-page",
+          href: "#",
+          target: 'app',
+          loading: false
+        };
+        EmbeddedAppExample.title = "The page title";
+      }
+      ShopifyApp.Bar.setBreadcrumb(EmbeddedAppExample.breadcrumb);
+      ShopifyApp.Bar.setTitle(EmbeddedAppExample.title);
+    },
+    toggleDisableButtons: function () {
+      if (EmbeddedAppExample.buttonsDisabled) {
+        ShopifyApp.Bar.enableAllButtons();
+        EmbeddedAppExample.buttonsDisabled = false;
+      }
+      else {
+        ShopifyApp.Bar.disableAllButtons();
+        EmbeddedAppExample.buttonsDisabled = true;
+      }
+    },
+    showPrimaryButtonsOnly: function () {
+      ShopifyApp.Bar.initialize(EmbeddedAppExample.onlyPrimaryButton);
+    },
+    showAllButtons: function () {
+      ShopifyApp.Bar.initialize(EmbeddedAppExample.allButtons);
+    },
+    addPagination: function () {
+      ShopifyApp.Bar.setPagination({
+        previous: {
+          loading: false,
+          callback: function () {
+            alert('Previous clicked');
+          }
+        },
+        next: {
+          loading: false,
+          callback: function () {
+            alert('Next clicked');
+          }
+        }
+      });
+    },
+    singleProductPicker: function (options) {
+      ShopifyApp.Modal.productPicker(options, function (result, data) {
+        if (data.products && data.products.length > 0) {
+          message = data.products[0].title + " was selected by the user."
+        } else if (result) {
+          message = "'Select Product' was clicked but nothing was selected."
+        } else if (data.errors) {
+          message = data.errors
+        } else {
+          message = "Product selection cancelled!"
+        }
+        ShopifyApp.flashNotice(message)
+      });
+    },
+    multipleProductsPicker: function (options) {
+      options = options || {}
+      options.selectMultiple = true;
+      ShopifyApp.Modal.productPicker(options, function (result, data) {
+        if (data.products && data.products.length > 0) {
+          productTitles = data.products.map(function (product) {
+            return product.title
+          })
+          message = productTitles.join(", ") + " selected."
+        } else if (result) {
+          message = "'Select Product' was clicked but nothing was selected."
+        } else if (data.errors) {
+          message = data.errors
+        } else {
+          message = "Product selection cancelled!"
+        }
+        ShopifyApp.flashNotice(message)
+      });
+    },
+    singleCollectionPicker: function (options) {
+      ShopifyApp.Modal.collectionPicker(options, function (result, data) {
+        if (data.collections && data.collections.length > 0) {
+          message = data.collections[0].handle + " was selected by the user."
+        } else if (result) {
+          message = "'Select Collection' was clicked but nothing was selected."
+        } else if (data.errors) {
+          message = data.errors
+        } else {
+          message = "Collection selection cancelled!"
+        }
+        ShopifyApp.flashNotice(message)
+      });
+    },
+    multipleCollectionPicker: function (options) {
+      options = options || {}
+      options.selectMultiple = true;
+      ShopifyApp.Modal.collectionPicker(options, function (result, data) {
+        if (data.collections && data.collections.length > 0) {
+          collectionTitles = data.collections.map(function (collection) {
+            return collection.title
+          });
+          message = collectionTitles.join(", ") + " selected.";
+        }
+        else if (result) {
+          message = "'Select Collection' was clicked but nothing was selected.";
+        }
+        else if (data.errors) {
+          message = data.errors;
+        }
+        else {
+          message = "Collection selection cancelled!";
+        }
+        ShopifyApp.flashNotice(message);
+      });
+    },
+    alert: function () {
+      ShopifyApp.Modal.alert('This window is in Shopify');
+    },
+    confirm: function () {
+      ShopifyApp.Modal.confirm({
+        title: "Are you sure?",
+        message: "You need to accept the terms of service before continuing. Do you accept?",
+        okButton: "Yes, I accept",
+        cancelButton: "No, I decline",
+        style: 'danger'
+      }, function (result) {
+        if (result)
+          ShopifyApp.flashNotice("Clicked 'yes'");
+        else
+          ShopifyApp.flashNotice("Clicked 'no'");
+      });
+    },
+    input: function (value) {
+      ShopifyApp.Modal.input({ message: "Enter some text:", value: value }, function (result, data) {
+        if (result) {
+          ShopifyApp.flashNotice("Received: \"" + data + "\"");
+        }
+        else {
+          ShopifyApp.flashError("Input cancelled.");
+        }
+      });
+    },
+    modal: function () {
+      ShopifyApp.Modal.open({
+        src: EmbeddedAppExample.modalUrl(),
+        title: 'Embedded app example modal with lots of buttons',
+        height: 300,
+        style: 'disabled',
+        buttons: {
+          primary: {
+            label: "OK",
+            loading: true,
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'OK');
+              ShopifyApp.Bar.loadingOff();
+            }
+          },
+          secondary: [
+            {
+              label: "Destroy",
+              style: 'danger',
+              callback: function (label) {
+                ShopifyApp.Modal.close(false, "App callback fired with - Clicked Destroy");
+              }
+            }
+          ],
+          tertiary: [
+            {
+              label: "Dropdown (Not Implemented)",
+              type: "dropdown",
+              links: [
+                {
+                  label: "Alert modal",
+                  loading: false,
+                  callback: function () { EmbeddedAppExample.alert(); }
+                },
+                {
+                  label: "Google",
+                  href: "http://google.ca",
+                  target: "parent",
+                  loading: true
+                }
+              ]
+            },
+            {
+              label: "new",
+              href: "http://docs.shopify.com/embedded-app-sdk",
+              target: 'new'
+            },
+            {
+              label: "shopify",
+              href: "/apps",
+              target: 'shopify'
+            },
+            {
+              label: "parent",
+              href: "http://docs.shopify.com/embedded-app-sdk",
+              target: 'parent'
+            },
+            {
+              label: "app",
+              href: EmbeddedAppExample.modalUrl(),
+              target: 'app'
+            }
+          ]
+        }
+      }, function (result, data) {
+        if (result) {
+          ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+        } else {
+          ShopifyApp.flashError("Modal cancelled with: " + result + " / " + data)
+        }
+      });
+    },
+    buttonlessModal: function () {
+      ShopifyApp.Modal.open({
+        src: EmbeddedAppExample.modalUrl(),
+        title: 'Embedded app example modal',
+        height: 500
+      }, function (result, data) {
+        ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+      });
+    },
+    togglePrimaryButton: function () {
+      ShopifyApp.Modal.open({
+        src: EmbeddedAppExample.modalUrl(),
+        title: 'Embedded app example modal',
+        height: 500,
+        buttons: {
+          primary: {
+            label: "Send",
+            loading: true,
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'Send');
+              ShopifyApp.Bar.loadingOff();
+            }
+          },
+          secondary: {
+            label: 'Cancel',
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'Cancel')
+            }
+          }
+        }
+      }, function (result, data) {
+        ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+      });
+    },
+    defaultSizeModal: function () {
+      ShopifyApp.Modal.open({
+        src: EmbeddedAppExample.modalUrl(),
+        title: 'Embedded app example modal',
+        buttons: {
+          primary: {
+            label: "OK",
+            loading: true,
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'OK');
+              ShopifyApp.Bar.loadingOff();
+            }
+          }
+        }
+      }, function (result, data) {
+        ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+      });
+    },
+    fullsizeModal: function () {
+      ShopifyApp.Modal.open({
+        src: EmbeddedAppExample.modalUrl(),
+        title: 'Embedded app example modal',
+        height: 700,
+        width: 'fullwidth',
+        buttons: {
+          primary: {
+            label: "OK",
+            loading: true,
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'OK');
+              ShopifyApp.Bar.loadingOff();
+            }
+          }
+        }
+      }, function (result, data) {
+        ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+      });
+    },
+    minSizeModal: function () {
+      ShopifyApp.Modal.open({
+        src: EmbeddedAppExample.modalUrl(),
+        title: 'Embedded app example modal',
+        height: 1,
+        width: 1,
+        buttons: {
+          primary: {
+            label: "OK",
+            loading: true,
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'OK');
+              ShopifyApp.Bar.loadingOff();
+            }
+          }
+        }
+      }, function (result, data) {
+        ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+      });
+    },
+    disableAnimationModal: function () {
+      ShopifyApp.Modal.open({
+        disableAnimation: true,
+        src: EmbeddedAppExample.modalUrl(),
+        title: 'Embedded app example modal with no animations',
+        height: 500,
+        buttons: {
+          primary: {
+            label: "OK",
+            loading: true,
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'OK');
+              ShopifyApp.Bar.loadingOff();
+            }
+          }
+        }
+      }, function (result, data) {
+        ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+      });
+    },
+    hideHeaderModal: function () {
+      ShopifyApp.Modal.open({
+        hideHeader: true,
+        src: EmbeddedAppExample.modalUrl(),
+        height: 500,
+        buttons: {
+          primary: {
+            label: "OK",
+            loading: true,
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'OK');
+              ShopifyApp.Bar.loadingOff();
+            }
+          }
+        }
+      }, function (result, data) {
+        ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+      });
+    },
+    hideFooterModal: function () {
+      ShopifyApp.Modal.open({
+        hideFooter: true,
+        src: EmbeddedAppExample.modalUrl(),
+        title: 'Embedded app example modal without footer',
+        height: 500,
+        buttons: {
+          primary: {
+            label: "OK",
+            loading: true,
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'OK');
+              ShopifyApp.Bar.loadingOff();
+            }
+          }
+        }
+      }, function (result, data) {
+        ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+      });
+    },
+    fullscreenModal: function () {
+      ShopifyApp.Modal.open({
+        src: EmbeddedAppExample.modalUrl(),
+        title: 'Embedded app example modal',
+        fullScreen: true,
+        buttons: {
+          primary: {
+            label: "OK",
+            loading: true,
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'OK');
+              ShopifyApp.Bar.loadingOff();
+            }
+          }
+        }
+      }, function (result, data) {
+        ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+      });
+    },
+    loadingOn: function () {
+      ShopifyApp.Bar.loadingOn();
+    },
+    loadingOff: function () {
+      ShopifyApp.Bar.loadingOff();
+    },
+    flashNotice: function (message) {
+      ShopifyApp.flashNotice(message || 'App callback fired with - Operation was successful');
+    },
+    flashError: function (message) {
+      ShopifyApp.flashError(message || 'App callback fired with - There was an error');
+    },
+    pushState: function () {
+      ShopifyApp.pushState('/url/push_state')
+    },
+    replaceState: function () {
+      ShopifyApp.replaceState('/url/replace_state')
+    },
+    remoteRedirect: function () {
+      ShopifyApp.remoteRedirect('https://help.shopify.com/api/sdks/embedded-app-sdk')
+    },
+    print: function () {
+      ShopifyApp.print();
+    },
+    changeSidebarSubsection: function (section) {
+      ShopifyApp.Sidebar.setSection(section);
+    }
+  }
+  var paramPairs = decodeURIComponent(window.location.search.slice(1)).split('&');
+  for (var i = 0; i < paramPairs.length; i++) {
+    var param = paramPairs[i].split('=');
+    if (param[0] == 'api_key') EmbeddedAppExample.apiKey = param[1];
+    if (param[0] == 'shop') {
+      EmbeddedAppExample.shop = param[1];
+      EmbeddedAppExample.origin = 'https://' + param[1];
+    }
+  }
+</script>
 
-  <body>
-    <p>
-      This demo page allows you to test and debug some of features of the
-      Shopify embedded app SDK without having to run and install an app.
-    </p>
+<body onload="EmbeddedAppExample.init()">
+  <p>
+    This demo page allows you to test and debug some of features of the Shopify embedded app SDK without having to run and install
+    an app.
+  </p>
 
-    <ul>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.loadingOn(); return false;"
-        >
-          Loading on
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.loadingOff(); return false;"
-        >
-          Loading off
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.toggleTitle(); return false;"
-        >
-          Toggle page title
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.toggleBreadcrumb(); return false;"
-        >
-          Toggle breadcrumb
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.showAllButtons(); return false;"
-        >
-          Render all button types
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.showPrimaryButtonsOnly(); return false;"
-        >
-          Render primary button only
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.toggleDisableButtons(); return false;"
-        >
-          Toggle disabled buttons
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.flashNotice(); return false;"
-        >
-          Flash notice
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.flashError(); return false;"
-        >
-          Flash error
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.addPagination(); return false;"
-        >
-          Add pagination
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.print(); return false;"
-        >
-          Print this page
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.pushState(); return false;"
-        >
-          Push URL state
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.replaceState(); return false;"
-        >
-          Replace new URL state
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.remoteRedirect(); return false;"
-        >
-          Redirect to another page with postMessage
-        </button>
-      </li>
-    </ul>
+  <ul>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.loadingOn(); return false;">Loading on</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.loadingOff(); return false;">Loading off</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.toggleTitle(); return false;">Toggle page title</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.toggleBreadcrumb(); return false;">Toggle breadcrumb</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.showAllButtons(); return false;">Render all button types</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.showPrimaryButtonsOnly(); return false;">Render primary button only</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.toggleDisableButtons(); return false;">Toggle disabled buttons</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.flashNotice(); return false;">Flash notice</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.flashError(); return false;">Flash error</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.addPagination(); return false;">Add pagination</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.print(); return false;">Print this page</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.pushState(); return false;">Push URL state</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.replaceState(); return false;">Replace new URL state</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.remoteRedirect(); return false;">Redirect to another page with postMessage</button>
+    </li>
+  </ul>
 
-    <ul>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.alert(); return false;"
-        >
-          Alert modal
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.confirm(); return false;"
-        >
-          Confirm modal
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.input(); return false;"
-        >
-          Input modal
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.input('Current value'); return false;"
-        >
-          Input modal w/ existing value (editing a value)
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.modal(); return false;"
-        >
-          Modal iframe
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.buttonlessModal(); return false;"
-        >
-          Modal iframe with no buttons
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.togglePrimaryButton(); return false;"
-        >
-          Modal iframe toggle on the primary button
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.defaultSizeModal(); return false;"
-        >
-          Modal iframe DEFAULT width and height
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.fullsizeModal(); return false;"
-        >
-          Modal iframe MAX width and height
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.minSizeModal(); return false;"
-        >
-          Modal iframe MIN width and height
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.disableAnimationModal(); return false;"
-        >
-          Modal iframe with disabled animation
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.hideHeaderModal(); return false;"
-        >
-          Modal iframe with header hidden
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.hideFooterModal(); return false;"
-        >
-          Modal iframe with footer hidden
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.fullscreenModal(); return false;"
-        >
-          Full screen modal iframe
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.singleProductPicker({}); return false;"
-        >
-          Single Product Picker
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.singleProductPicker({title: 'oh hai'}); return false;"
-        >
-          Single Product Picker with custom title
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.multipleProductsPicker({}); return false;"
-        >
-          Multiple Product Picker
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.multipleProductsPicker({title: 'oh hai'}); return false;"
-        >
-          Multiple Product Picker with custom title
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.singleCollectionPicker(); return false;"
-        >
-          Single Collection Picker
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.singleCollectionPicker({title: 'oh hai'}); return false;"
-        >
-          Single Collection Picker with custom title
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.singleCollectionPicker({selectable_resources: ['products','collections'] }); return false;"
-        >
-          Single Collection Picker with Resource Toggle
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.multipleCollectionPicker(); return false;"
-        >
-          Multiple Collection Picker
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.multipleCollectionPicker({title: 'oh hai'}); return false;"
-        >
-          Multiple Collection Picker with custom title
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.multipleCollectionPicker({selectable_resources: ['products','collections'] }); return false;"
-        >
-          Multiple Collection Picker with Resource Toggle
-        </button>
-      </li>
-    </ul>
+  <ul>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.alert(); return false;">Alert modal</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.confirm(); return false;">Confirm modal</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.input(); return false;">Input modal</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.input('Current value'); return false;">Input modal w/ existing value (editing a value)</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.modal(); return false;">Modal iframe</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.buttonlessModal(); return false;">Modal iframe with no buttons</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.togglePrimaryButton(); return false;">Modal iframe toggle on the primary button</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.defaultSizeModal(); return false;">Modal iframe DEFAULT width and height</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.fullsizeModal(); return false;">Modal iframe MAX width and height</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.minSizeModal(); return false;">Modal iframe MIN width and height</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.disableAnimationModal(); return false;">Modal iframe with disabled animation</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.hideHeaderModal(); return false;">Modal iframe with header hidden</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.hideFooterModal(); return false;">Modal iframe with footer hidden</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.fullscreenModal(); return false;">Full screen modal iframe</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.singleProductPicker({}); return false;">Single Product Picker</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.singleProductPicker({title: 'oh hai'}); return false;">Single Product Picker with custom title</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.multipleProductsPicker({}); return false;">Multiple Product Picker</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.multipleProductsPicker({title: 'oh hai'}); return false;">Multiple Product Picker with custom title</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.singleCollectionPicker(); return false;">Single Collection Picker</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.singleCollectionPicker({title: 'oh hai'}); return false;">Single Collection Picker with custom title</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.singleCollectionPicker({selectable_resources: ['products','collections'] }); return false;">
+        Single Collection Picker with Resource Toggle
+      </button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.multipleCollectionPicker(); return false;">Multiple Collection Picker</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.multipleCollectionPicker({title: 'oh hai'}); return false;">Multiple Collection Picker with custom title</button>
+    </li>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.multipleCollectionPicker({selectable_resources: ['products','collections'] }); return false;">
+        Multiple Collection Picker with Resource Toggle
+      </button>
+    </li>
+  </ul>
 
-    <ul>
-      <li>
-        <button
-          type="button"
-          onclick="EmbeddedAppExample.changeSidebarSubsection('subsection'); return false;"
-        >
-          Change Sidebar Section
-        </button>
-        &ndash; this won't work if the current section doesn't have a
-        subsection.
-      </li>
-    </ul>
 
-    <p>
-      Logged in user:
-      <span id="current-user" style="font-weight: bold;">loading...</span>
-    </p>
+  <ul>
+    <li>
+      <button type="button" onclick="EmbeddedAppExample.changeSidebarSubsection('subsection'); return false;">Change Sidebar Section</button> &ndash; this won't work if the current section doesn't have a subsection.</li>
+  </ul>
 
-    <p>
-      If the above features do not appear to be working open your browser's
-      Javascript console. It should contain detailed debugging information and
-      some hints as to what the problem may be.
-    </p>
+  <p>
+    Logged in user:
+    <span id="current-user" style="font-weight: bold;">loading...</span>
+  </p>
 
-    <p>
-      This example page only uses a subset of the available embedded app
-      features. See the
-      <a href="https://github.com/Shopify/embedded-app-example/"
-        >embedded-app-example</a
-      >
-      repo for a full demo app.
-    </p>
-  </body>
+  <p>
+    If the above features do not appear to be working open your browser's Javascript console. It should contain detailed debugging
+    information and some hints as to what the problem may be.
+  </p>
+
+  <p>
+    This example page only uses a subset of the available embedded app features. See the
+    <a href="https://github.com/Shopify/embedded-app-example/">embedded-app-example</a> repo for a full demo app.
+  </p>
+
+</body>
+
 </html>
