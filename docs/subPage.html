@@ -6,6 +6,495 @@
 </head>
 <script src="https://cdn.shopify.com/s/assets/external/app.js"></script>
 <script>
+  window.EmbeddedAppExample = {
+    allButtons: {
+      buttons: {
+        primary: {
+          label: "Sweet arse button",
+        },
+        secondary: [
+          {
+            label: "Dropdown",
+            type: "dropdown",
+            links: [
+              {
+                label: "Alert modal",
+                loading: false,
+                callback: function () { EmbeddedAppExample.alert(); }
+              },
+              {
+                label: "Google",
+                href: "http://google.ca",
+                target: "parent",
+                loading: true
+              }
+            ]
+          },
+          {
+            label: "Documentation",
+            href: "http://docs.shopify.com/embedded-app-sdk",
+            target: 'new'
+          },
+          {
+            label: "Back",
+            href: "/apps",
+            target: 'shopify'
+          },
+          {
+            label: "Navigate to sub page",
+            href: "https://vividviolet.github.io/test-local-app/subPage.html",
+          },
+        ]
+      }
+    },
+    onlyPrimaryButton: {
+      buttons: {
+        primary: {
+          label: "Sweet arse button",
+        }
+      }
+    },
+    apiKey: undefined,
+    origin: undefined,
+    shop: undefined,
+    title: undefined,
+    buttonsDisabled: false,
+    breadcrumb: undefined,
+    modalUrl: function () {
+      return 'https://vividviolet.github.io/test-local-app?api_key=' + EmbeddedAppExample.apiKey + '&shop=' + EmbeddedAppExample.shop;
+    },
+    init: function () {
+      ShopifyApp.init({
+        apiKey: EmbeddedAppExample.apiKey,
+        shopOrigin: EmbeddedAppExample.origin,
+        debug: true,
+        forceRedirect: false
+      });
+      ShopifyApp.ready(function () {
+        // ShopifyApp.Bar.initialize(EmbeddedAppExample.allButtons);
+        document.getElementById('current-user').innerHTML = JSON.stringify(ShopifyApp.User.current);
+      });
+    },
+    toggleTitle: function () {
+      EmbeddedAppExample.title = (EmbeddedAppExample.title ? undefined : "The page title")
+      ShopifyApp.Bar.setBreadcrumb(undefined);
+      ShopifyApp.Bar.setTitle(EmbeddedAppExample.title);
+    },
+    toggleBreadcrumb: function () {
+      if (EmbeddedAppExample.breadcrumb) {
+        EmbeddedAppExample.breadcrumb = undefined;
+        EmbeddedAppExample.title = undefined;
+      }
+      else {
+        EmbeddedAppExample.breadcrumb = {
+          label: "Sub-page",
+          href: "#",
+          target: 'app',
+          loading: false
+        };
+        EmbeddedAppExample.title = "The page title";
+      }
+      ShopifyApp.Bar.setBreadcrumb(EmbeddedAppExample.breadcrumb);
+      ShopifyApp.Bar.setTitle(EmbeddedAppExample.title);
+    },
+    toggleDisableButtons: function () {
+      if (EmbeddedAppExample.buttonsDisabled) {
+        ShopifyApp.Bar.enableAllButtons();
+        EmbeddedAppExample.buttonsDisabled = false;
+      }
+      else {
+        ShopifyApp.Bar.disableAllButtons();
+        EmbeddedAppExample.buttonsDisabled = true;
+      }
+    },
+    showPrimaryButtonsOnly: function () {
+      ShopifyApp.Bar.initialize(EmbeddedAppExample.onlyPrimaryButton);
+    },
+    showAllButtons: function () {
+      ShopifyApp.Bar.initialize(EmbeddedAppExample.allButtons);
+    },
+    addPagination: function () {
+      ShopifyApp.Bar.setPagination({
+        previous: {
+          loading: false,
+          callback: function () {
+            alert('Previous clicked');
+          }
+        },
+        next: {
+          loading: false,
+          callback: function () {
+            alert('Next clicked');
+          }
+        }
+      });
+    },
+    singleProductPicker: function (options) {
+      ShopifyApp.Modal.productPicker(options, function (result, data) {
+        if (data.products && data.products.length > 0) {
+          message = data.products[0].title + " was selected by the user."
+        } else if (result) {
+          message = "'Select Product' was clicked but nothing was selected."
+        } else if (data.errors) {
+          message = data.errors
+        } else {
+          message = "Product selection cancelled!"
+        }
+        ShopifyApp.flashNotice(message)
+      });
+    },
+    multipleProductsPicker: function (options) {
+      options = options || {}
+      options.selectMultiple = true;
+      ShopifyApp.Modal.productPicker(options, function (result, data) {
+        if (data.products && data.products.length > 0) {
+          productTitles = data.products.map(function (product) {
+            return product.title
+          })
+          message = productTitles.join(", ") + " selected."
+        } else if (result) {
+          message = "'Select Product' was clicked but nothing was selected."
+        } else if (data.errors) {
+          message = data.errors
+        } else {
+          message = "Product selection cancelled!"
+        }
+        ShopifyApp.flashNotice(message)
+      });
+    },
+    singleCollectionPicker: function (options) {
+      ShopifyApp.Modal.collectionPicker(options, function (result, data) {
+        if (data.collections && data.collections.length > 0) {
+          message = data.collections[0].handle + " was selected by the user."
+        } else if (result) {
+          message = "'Select Collection' was clicked but nothing was selected."
+        } else if (data.errors) {
+          message = data.errors
+        } else {
+          message = "Collection selection cancelled!"
+        }
+        ShopifyApp.flashNotice(message)
+      });
+    },
+    multipleCollectionPicker: function (options) {
+      options = options || {}
+      options.selectMultiple = true;
+      ShopifyApp.Modal.collectionPicker(options, function (result, data) {
+        if (data.collections && data.collections.length > 0) {
+          collectionTitles = data.collections.map(function (collection) {
+            return collection.title
+          });
+          message = collectionTitles.join(", ") + " selected.";
+        }
+        else if (result) {
+          message = "'Select Collection' was clicked but nothing was selected.";
+        }
+        else if (data.errors) {
+          message = data.errors;
+        }
+        else {
+          message = "Collection selection cancelled!";
+        }
+        ShopifyApp.flashNotice(message);
+      });
+    },
+    alert: function () {
+      ShopifyApp.Modal.alert('This window is in Shopify');
+    },
+    confirm: function () {
+      ShopifyApp.Modal.confirm({
+        title: "Are you sure?",
+        message: "You need to accept the terms of service before continuing. Do you accept?",
+        okButton: "Yes, I accept",
+        cancelButton: "No, I decline",
+        style: 'danger'
+      }, function (result) {
+        if (result)
+          ShopifyApp.flashNotice("Clicked 'yes'");
+        else
+          ShopifyApp.flashNotice("Clicked 'no'");
+      });
+    },
+    input: function (value) {
+      ShopifyApp.Modal.input({ message: "Enter some text:", value: value }, function (result, data) {
+        if (result) {
+          ShopifyApp.flashNotice("Received: \"" + data + "\"");
+        }
+        else {
+          ShopifyApp.flashError("Input cancelled.");
+        }
+      });
+    },
+    modal: function () {
+      ShopifyApp.Modal.open({
+        src: EmbeddedAppExample.modalUrl(),
+        title: 'Embedded app example modal with lots of buttons',
+        height: 300,
+        style: 'disabled',
+        buttons: {
+          primary: {
+            label: "OK",
+            loading: true,
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'OK');
+              ShopifyApp.Bar.loadingOff();
+            }
+          },
+          secondary: [
+            {
+              label: "Destroy",
+              style: 'danger',
+              callback: function (label) {
+                ShopifyApp.Modal.close(false, "App callback fired with - Clicked Destroy");
+              }
+            }
+          ],
+          tertiary: [
+            {
+              label: "Dropdown (Not Implemented)",
+              type: "dropdown",
+              links: [
+                {
+                  label: "Alert modal",
+                  loading: false,
+                  callback: function () { EmbeddedAppExample.alert(); }
+                },
+                {
+                  label: "Google",
+                  href: "http://google.ca",
+                  target: "parent",
+                  loading: true
+                }
+              ]
+            },
+            {
+              label: "new",
+              href: "http://docs.shopify.com/embedded-app-sdk",
+              target: 'new'
+            },
+            {
+              label: "shopify",
+              href: "/apps",
+              target: 'shopify'
+            },
+            {
+              label: "parent",
+              href: "http://docs.shopify.com/embedded-app-sdk",
+              target: 'parent'
+            },
+            {
+              label: "app",
+              href: EmbeddedAppExample.modalUrl(),
+              target: 'app'
+            }
+          ]
+        }
+      }, function (result, data) {
+        if (result) {
+          ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+        } else {
+          ShopifyApp.flashError("Modal cancelled with: " + result + " / " + data)
+        }
+      });
+    },
+    buttonlessModal: function () {
+      ShopifyApp.Modal.open({
+        src: EmbeddedAppExample.modalUrl(),
+        title: 'Embedded app example modal',
+        height: 500
+      }, function (result, data) {
+        ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+      });
+    },
+    togglePrimaryButton: function () {
+      ShopifyApp.Modal.open({
+        src: EmbeddedAppExample.modalUrl(),
+        title: 'Embedded app example modal',
+        height: 500,
+        buttons: {
+          primary: {
+            label: "Send",
+            loading: true,
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'Send');
+              ShopifyApp.Bar.loadingOff();
+            }
+          },
+          secondary: {
+            label: 'Cancel',
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'Cancel')
+            }
+          }
+        }
+      }, function (result, data) {
+        ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+      });
+    },
+    defaultSizeModal: function () {
+      ShopifyApp.Modal.open({
+        src: EmbeddedAppExample.modalUrl(),
+        title: 'Embedded app example modal',
+        buttons: {
+          primary: {
+            label: "OK",
+            loading: true,
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'OK');
+              ShopifyApp.Bar.loadingOff();
+            }
+          }
+        }
+      }, function (result, data) {
+        ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+      });
+    },
+    fullsizeModal: function () {
+      ShopifyApp.Modal.open({
+        src: EmbeddedAppExample.modalUrl(),
+        title: 'Embedded app example modal',
+        height: 700,
+        width: 'fullwidth',
+        buttons: {
+          primary: {
+            label: "OK",
+            loading: true,
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'OK');
+              ShopifyApp.Bar.loadingOff();
+            }
+          }
+        }
+      }, function (result, data) {
+        ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+      });
+    },
+    minSizeModal: function () {
+      ShopifyApp.Modal.open({
+        src: EmbeddedAppExample.modalUrl(),
+        title: 'Embedded app example modal',
+        height: 1,
+        width: 1,
+        buttons: {
+          primary: {
+            label: "OK",
+            loading: true,
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'OK');
+              ShopifyApp.Bar.loadingOff();
+            }
+          }
+        }
+      }, function (result, data) {
+        ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+      });
+    },
+    disableAnimationModal: function () {
+      ShopifyApp.Modal.open({
+        disableAnimation: true,
+        src: EmbeddedAppExample.modalUrl(),
+        title: 'Embedded app example modal with no animations',
+        height: 500,
+        buttons: {
+          primary: {
+            label: "OK",
+            loading: true,
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'OK');
+              ShopifyApp.Bar.loadingOff();
+            }
+          }
+        }
+      }, function (result, data) {
+        ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+      });
+    },
+    hideHeaderModal: function () {
+      ShopifyApp.Modal.open({
+        hideHeader: true,
+        src: EmbeddedAppExample.modalUrl(),
+        height: 500,
+        buttons: {
+          primary: {
+            label: "OK",
+            loading: true,
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'OK');
+              ShopifyApp.Bar.loadingOff();
+            }
+          }
+        }
+      }, function (result, data) {
+        ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+      });
+    },
+    hideFooterModal: function () {
+      ShopifyApp.Modal.open({
+        hideFooter: true,
+        src: EmbeddedAppExample.modalUrl(),
+        title: 'Embedded app example modal without footer',
+        height: 500,
+        buttons: {
+          primary: {
+            label: "OK",
+            loading: true,
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'OK');
+              ShopifyApp.Bar.loadingOff();
+            }
+          }
+        }
+      }, function (result, data) {
+        ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+      });
+    },
+    fullscreenModal: function () {
+      ShopifyApp.Modal.open({
+        src: EmbeddedAppExample.modalUrl(),
+        title: 'Embedded app example modal',
+        fullScreen: true,
+        buttons: {
+          primary: {
+            label: "OK",
+            loading: true,
+            callback: function () {
+              ShopifyApp.Modal.close(true, 'OK');
+              ShopifyApp.Bar.loadingOff();
+            }
+          }
+        }
+      }, function (result, data) {
+        ShopifyApp.flashNotice("Modal closed with: " + result + " / " + data)
+      });
+    },
+    loadingOn: function () {
+      ShopifyApp.Bar.loadingOn();
+    },
+    loadingOff: function () {
+      ShopifyApp.Bar.loadingOff();
+    },
+    flashNotice: function (message) {
+      ShopifyApp.flashNotice(message || 'App callback fired with - Operation was successful');
+    },
+    flashError: function (message) {
+      ShopifyApp.flashError(message || 'App callback fired with - There was an error');
+    },
+    pushState: function () {
+      ShopifyApp.pushState('/url/push_state')
+    },
+    replaceState: function () {
+      ShopifyApp.replaceState('/url/replace_state')
+    },
+    remoteRedirect: function () {
+      ShopifyApp.remoteRedirect('https://help.shopify.com/api/sdks/embedded-app-sdk')
+    },
+    print: function () {
+      ShopifyApp.print();
+    },
+    changeSidebarSubsection: function (section) {
+      ShopifyApp.Sidebar.setSection(section);
+    }
+  }
   var paramPairs = decodeURIComponent(window.location.search.slice(1)).split('&');
   for (var i = 0; i < paramPairs.length; i++) {
     var param = paramPairs[i].split('=');
@@ -15,20 +504,28 @@
       EmbeddedAppExample.origin = 'https://' + param[1];
     }
   }
-
-  ShopifyApp.ready(() => {
-      ShopifyApp.init({
-      apiKey: EmbeddedAppExample.apiKey,
-      shopOrigin: EmbeddedAppExample.origin,
-      debug: true,
-      forceRedirect: false
-    });
-  });
 </script>
 
-<body>
+<body onload="EmbeddedAppExample.init()">
   <p>
-    This page doesn't set the title bar.
+    This demo page allows you to test and debug some of features of the Shopify embedded app SDK without having to run and install
+    an app.
   </p>
+  <p>
+    Logged in user:
+    <span id="current-user" style="font-weight: bold;">loading...</span>
+  </p>
+
+  <p>
+    If the above features do not appear to be working open your browser's Javascript console. It should contain detailed debugging
+    information and some hints as to what the problem may be.
+  </p>
+
+  <p>
+    This example page only uses a subset of the available embedded app features. See the
+    <a href="https://github.com/Shopify/embedded-app-example/">embedded-app-example</a> repo for a full demo app.
+  </p>
+
 </body>
+
 </html>
